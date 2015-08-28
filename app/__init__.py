@@ -9,7 +9,7 @@ from redis import Redis
 
 from Crypto.Cipher import AES
 
-URL_BASE = 'https://tagging.fandangousa.com:5000/'
+URL_BASE = 'http://localhost:5000/'
 app = Flask(__name__)
 
 
@@ -17,7 +17,6 @@ vals = {}
 
 @app.route('/')
 def index():
-    print 'Yeah, Science!'
     return render_template('index.html')
 
 @app.route('/submit', methods=['POST'])
@@ -33,7 +32,6 @@ def submit():
     _id = uuid4().hex
     vals[_id] = b64encode(aes.encrypt(message))
 
-    # return 'https://tagging.fandangousa.com:1234/%s/%s'%(_id, _key)
     return render_template('getMessage.html', message=URL_BASE + '%s?k=%s'%(_id, quote(_key, safe='')))
 
 @app.route('/<string:_id>')
