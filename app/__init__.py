@@ -8,8 +8,12 @@ from flask import Flask, render_template, request, Response
 from redis import Redis
 
 from Crypto.Cipher import AES
+from Cypto.Hash import HMAC
 
 URL_BASE = 'http://localhost:5000/'
+
+_AES = AES.new(urandom(32), AES.MODE_CBC)
+HASH_KEY = urandom(32)
 app = Flask(__name__)
 
 
@@ -23,8 +27,8 @@ def index():
 def submit():
     ##Create a random password
     key = urandom(32)
-    aes = AES.new(key)
-    _key = b64encode(key)
+    aes = AES.new(key, AES.MODE_CBC)
+    _key = _AES.encrypt(key)
 
     message = request.form.get('message', '')
     message += ' '*(16-(len(message) % 16 or 16))
@@ -32,12 +36,12 @@ def submit():
     _id = uuid4().hex
     vals[_id] = b64encode(aes.encrypt(message))
 
-    return render_template('getMessage.html', message=URL_BASE + '%s?k=%s'%(_id, quote(_key, safe='')))
+    return render_template('getMessage.html', message=URL_BASE + quote(b64encode('%s||%s||%s'%(_id, _key, HMAC(HASH_KEY, _key).digest())), safe=''))
 
 @app.route('/<string:_id>')
 def retreive(_id):
     msg_encrypted = vals.get(_id)
-    key = request.args.get('k')
+
     
     if msg_encrypted is None or key is None:
         return render_template('noMessage.html'), 404
