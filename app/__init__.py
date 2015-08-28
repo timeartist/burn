@@ -9,7 +9,7 @@ from redis import Redis
 
 from Crypto.Cipher import AES
 
-URL_BASE = 'http://localhost:5000/'
+URL_BASE = 'https://tagging.fandangousa.com:5000/'
 app = Flask(__name__)
 
 
@@ -50,4 +50,4 @@ def retreive(_id):
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(port=666)
