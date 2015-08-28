@@ -5,11 +5,10 @@ from uuid import uuid4
 from urllib import quote
 
 from flask import Flask, render_template, request, Response
-from redis import Redis
 
 from Crypto.Cipher import AES
 
-URL_BASE = 'https://tagging.fandangousa.com:5000/'
+URL_BASE = 'https://tagging.fandangousa.com:1234/'
 app = Flask(__name__)
 
 
