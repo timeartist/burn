@@ -5,19 +5,17 @@ from uuid import uuid4
 from urllib import quote
 
 from flask import Flask, render_template, request, Response
-from redis import Redis
 
 from Crypto import Random
 from Crypto.Cipher import AES
 from Crypto.Hash.HMAC import HMAC
 
-URL_BASE = 'https://tagging.fandangousa.com:5000?-='
+URL_BASE = 'https://tagging.fandangousa.com:1234?-='
 
 _IV = Random.new().read(AES.block_size)
 _KEY = urandom(32)
 HASH_KEY = urandom(32)
 app = Flask(__name__)
-
 
 vals = {}
 
@@ -25,14 +23,14 @@ vals = {}
 def index():
     url_arg = request.args.get('-')
     if url_arg is not None:
-        _id, _key, _key_hash = b64decode(url_arg).split('||')
+        _id, _key, _key_hash, iv  = b64decode(url_arg).split('||')
         if _key_hash == HMAC(HASH_KEY, _key).digest():
             _aes = AES.new(_KEY, AES.MODE_CBC, _IV)
             key = _aes.decrypt(_key)
             encrypted_msg = vals.get(_id)
             if encrypted_msg is not None:
                 vals.pop(_id)
-                aes = AES.new(key, AES.MODE_CBC, _IV)
+                aes = AES.new(key, AES.MODE_CBC, iv)
                 msg = aes.decrypt(b64decode(encrypted_msg))
                 return render_template('getMessage.html', message=msg.strip())
             else:
@@ -45,7 +43,7 @@ def submit():
     ##Create a random password
     key = urandom(32)
     iv = Random.new().read(AES.block_size)
-    aes = AES.new(key, AES.MODE_CBC, _IV)
+    aes = AES.new(key, AES.MODE_CBC, iv)
     _aes = AES.new(_KEY, AES.MODE_CBC, _IV)
     _key = _aes.encrypt(key)
 
@@ -55,9 +53,9 @@ def submit():
     _id = uuid4().hex
     vals[_id] = b64encode(aes.encrypt(message))
 
-    return render_template('getMessage.html', message=URL_BASE + quote(b64encode('%s||%s||%s'%(_id, _key, HMAC(HASH_KEY, _key).digest())), safe=''))
+    return render_template('getMessage.html', message=URL_BASE + quote(b64encode('%s||%s||%s||%s'%(_id, _key, HMAC(HASH_KEY, _key).digest(), iv)), safe=''))
 
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(port=666)
