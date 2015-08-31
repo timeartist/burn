@@ -5,6 +5,7 @@ from uuid import uuid4
 from urllib import quote
 
 from flask import Flask, render_template, request, Response
+from redis import Redis
 
 from Crypto import Random
 from Crypto.Cipher import AES
@@ -18,9 +19,9 @@ URL_BASE = 'https://tagging.fandangousa.com:1234?-='
 _IV = Random.new().read(AES.block_size)
 _KEY = urandom(32)
 HASH_KEY = urandom(32)
+R = Redis()
+DURATION = 60*60*24*3 ## 72 hours
 app = Flask(__name__)
-
-vals = {}
 
 @app.route('/')
 def index():
@@ -30,9 +31,9 @@ def index():
         if _key_hash == HMAC(HASH_KEY, _key).digest():
             _aes = AES.new(_KEY, AES.MODE_CBC, _IV)
             key = _aes.decrypt(_key)
-            encrypted_msg = vals.get(_id)
+            encrypted_msg = R.get(_id)
             if encrypted_msg is not None:
-                vals.pop(_id)
+                R.delete(_id)
                 aes = AES.new(key, AES.MODE_CBC, iv)
                 msg = aes.decrypt(b64decode(encrypted_msg))
                 return render_template('getMessage.html', message=msg.strip())
@@ -54,11 +55,12 @@ def submit():
     message += ' '*(AES.block_size-(len(message) % AES.block_size or AES.block_size))
 
     _id = uuid4().hex
-    vals[_id] = b64encode(aes.encrypt(message))
+    R.set(_id, b64encode(aes.encrypt(message)))
+    R.expire(_id, DURATION)
 
     return render_template('getMessage.html', message=URL_BASE + quote(b64encode('%s||%s||%s||%s'%(_id, _key, HMAC(HASH_KEY, _key).digest(), iv)), safe=''))
 
 
 
 if __name__ == '__main__':
-    app.run(debug=True, port=666)
+    app.run(port=666)
