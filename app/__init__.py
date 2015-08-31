@@ -50,15 +50,15 @@ def submit():
     _aes = AES.new(_KEY, AES.MODE_CBC, _IV)
     _key = _aes.encrypt(key)
 
-    message = request.form.get('message', '')
+    message = sanitize(request.form.get('message', ''), encoding_mode='replace')
     message += ' '*(AES.block_size-(len(message) % AES.block_size or AES.block_size))
 
     _id = uuid4().hex
-    vals[_id] = b64encode(aes.encrypt(sanitize(message)))
+    vals[_id] = b64encode(aes.encrypt(message))
 
     return render_template('getMessage.html', message=URL_BASE + quote(b64encode('%s||%s||%s||%s'%(_id, _key, HMAC(HASH_KEY, _key).digest(), iv)), safe=''))
 
 
 
 if __name__ == '__main__':
-    app.run(port=5000)
+    app.run(debug=True, port=666)
