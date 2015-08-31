@@ -1,1 +1,3 @@
 flask
+pycrypto
+git+ssh://git@github.com/fandango/ufyr.git

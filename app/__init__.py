@@ -10,6 +10,9 @@ from Crypto import Random
 from Crypto.Cipher import AES
 from Crypto.Hash.HMAC import HMAC
 
+from ufyr.utils.unicode_sanitizer import sanitize
+
+
 URL_BASE = 'https://tagging.fandangousa.com:1234?-='
 
 _IV = Random.new().read(AES.block_size)
@@ -51,11 +54,11 @@ def submit():
     message += ' '*(AES.block_size-(len(message) % AES.block_size or AES.block_size))
 
     _id = uuid4().hex
-    vals[_id] = b64encode(aes.encrypt(message))
+    vals[_id] = b64encode(aes.encrypt(sanitize(message)))
 
     return render_template('getMessage.html', message=URL_BASE + quote(b64encode('%s||%s||%s||%s'%(_id, _key, HMAC(HASH_KEY, _key).digest(), iv)), safe=''))
 
 
 
 if __name__ == '__main__':
-    app.run(port=666)
+    app.run(port=5000)
