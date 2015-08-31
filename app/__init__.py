@@ -41,7 +41,7 @@ def index():
     
     return render_template('index.html')
 
-@app.route('/submit', methods=['POST'])
+@app.route('/', methods=['POST'])
 def submit():
     ##Create a random password
     key = urandom(32)
