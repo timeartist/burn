@@ -14,7 +14,7 @@ from Crypto.Hash.HMAC import HMAC
 from ufyr.utils.unicode_sanitizer import sanitize
 
 
-URL_BASE = 'https://localhost:1234?-='
+URL_BASE = 'http://localhost:666?-='
 
 _IV = Random.new().read(AES.block_size)
 _KEY = urandom(32)
