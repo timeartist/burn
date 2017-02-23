@@ -14,7 +14,7 @@ from Crypto.Hash.HMAC import HMAC
 from ufyr.utils.unicode_sanitizer import sanitize
 
 
-URL_BASE = 'https://tagging.fandangousa.com:1234?-='
+URL_BASE = 'https://localhost:1234?-='
 
 _IV = Random.new().read(AES.block_size)
 _KEY = urandom(32)
@@ -39,7 +39,7 @@ def index():
                 return render_template('getMessage.html', message=msg.strip())
             else:
                 return render_template('noMessage.html'), 404
-    
+
     return render_template('index.html')
 
 @app.route('/', methods=['POST'])
@@ -63,4 +63,4 @@ def submit():
 
 
 if __name__ == '__main__':
-    app.run(port=666)
+    app.run(port=666, debug=True)
