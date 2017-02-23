@@ -1,4 +1,4 @@
-#burn
+#Burn
 
 ```shell
 sudo pip install -r requirements.txt
